@@ -1,15 +1,23 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission
+
+
+def get_role(user):
+    return getattr(getattr(user, "profile", None), "role", "CITIZEN")
+
 
 class IsOwnerOrOversight(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        role = getattr(request.user.profile, "role", "CITIZEN")
+    """
+    Citizens can access only their own complaint.
+    Oversight/Admin can access all complaints.
+    """
 
+    def has_object_permission(self, request, view, obj):
+        role = get_role(request.user)
         if role in ("OVERSIGHT", "ADMIN"):
             return True
-
         return obj.user == request.user
+
 
 class IsOversightOrAdmin(BasePermission):
     def has_permission(self, request, view):
-        role = getattr(request.user.profile, "role", "CITIZEN")
-        return role in ("OVERSIGHT", "ADMIN")
+        return get_role(request.user) in ("OVERSIGHT", "ADMIN")
