@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from authorities.models import OversightAuthority
 
 from .models import Complaint, Evidence
 from .serializers import ComplaintSerializer, EvidenceSerializer
@@ -30,18 +31,27 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         serializer = EvidenceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        Evidence.objects.create(complaint=complaint, **serializer.validated_data)
+        Evidence.objects.create(
+            complaint=complaint,
+            **serializer.validated_data
+        )
+
         return Response({"detail": "Evidence added"}, status=201)
 
     @action(detail=True, methods=["post"], permission_classes=[IsOversightOrAdmin])
-    def status(self, request, pk=None):
+    def route(self, request, pk=None):
         complaint = self.get_object()
-        new_status = request.data.get("status")
+        authority_id = request.data.get("authority_id")
 
-        valid = {s for s, _ in Complaint.Status.choices}
-        if new_status not in valid:
-            return Response({"detail": "Invalid status"}, status=400)
+        if not authority_id:
+            return Response({"detail": "authority_id is required"}, status=400)
 
-        complaint.status = new_status
-        complaint.save(update_fields=["status", "updated_at"])
-        return Response({"detail": "Status updated", "status": complaint.status})
+        try:
+            authority = OversightAuthority.objects.get(id=authority_id)
+        except OversightAuthority.DoesNotExist:
+            return Response({"detail": "Authority not found"}, status=404)
+
+        complaint.authority = authority
+        complaint.save(update_fields=["authority", "updated_at"])
+
+        return Response({"detail": "Complaint routed", "authority": authority.id})
