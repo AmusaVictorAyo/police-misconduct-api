@@ -1,23 +1,29 @@
-from rest_framework.permissions import BasePermission
-
-
-def get_role(user):
-    return getattr(getattr(user, "profile", None), "role", "CITIZEN")
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class IsOwnerOrOversight(BasePermission):
     """
-    Citizens can access only their own complaint.
-    Oversight/Admin can access all complaints.
+    - Citizens can only access their own complaints.
+    - Oversight/Admin (staff/superuser) can access any complaint.
     """
 
     def has_object_permission(self, request, view, obj):
-        role = get_role(request.user)
-        if role in ("OVERSIGHT", "ADMIN"):
+        user = request.user
+
+        # Allow staff/admin to do anything
+        if user and (user.is_staff or user.is_superuser):
             return True
-        return obj.user == request.user
+
+        # Otherwise only the owner can access
+        return obj.user == user
 
 
 class IsOversightOrAdmin(BasePermission):
+    """
+    Only Oversight/Admin can change status / route complaints.
+    For MVP, we treat staff/superuser as oversight/admin.
+    """
+
     def has_permission(self, request, view):
-        return get_role(request.user) in ("OVERSIGHT", "ADMIN")
+        user = request.user
+        return bool(user and (user.is_staff or user.is_superuser))

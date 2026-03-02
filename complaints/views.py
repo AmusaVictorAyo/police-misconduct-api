@@ -13,6 +13,7 @@ from .permissions import IsOwnerOrOversight, IsOversightOrAdmin
 class ComplaintViewSet(viewsets.ModelViewSet):
     serializer_class = ComplaintSerializer
     permission_classes = [IsOwnerOrOversight]
+    queryset = Complaint.objects.all()
 
     # Week 3: enable filtering/search/ordering if you already added django-filter settings
     filterset_fields = ["status", "category", "authority"]
@@ -22,15 +23,27 @@ class ComplaintViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        role = getattr(user.profile, "role", "CITIZEN")
+
+        # 1) If the user is staff/admin, they can see everything
+        # (this makes your current oversight1 user work even if profile.role is missing)
+        if user.is_staff or user.is_superuser:
+            return Complaint.objects.all().order_by("-created_at")
+
+        # 2) Otherwise, try to read role from profile safely
+        # If profile doesn't exist or role missing, default to CITIZEN
+        role = "CITIZEN"
+        try:
+            role = getattr(user.profile, "role", "CITIZEN")
+        except Exception:
+            role = "CITIZEN"
 
         qs = Complaint.objects.all().order_by("-created_at")
 
-        # Citizen sees only their own complaints
+        # 3) Citizens only see their own complaints
         if role == "CITIZEN":
             return qs.filter(user=user)
 
-        # Oversight/Admin sees all (Week 3/4 can restrict by authority later)
+        # 4) Oversight/Admin roles (from profile) can see all
         return qs
 
     def perform_create(self, serializer):
