@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "accounts",
     "authorities",
     "complaints",
+    "incidents"
 ]
 
 MIDDLEWARE = [
