@@ -74,3 +74,34 @@ http://127.0.0.1:8000/api/schema/
 
 🧪 Running Tests
 python manage.py test
+
+
+Deployment
+
+Production deployment uses:
+Gunicorn
+Environment variables
+Secure Django production settings
+
+Start production server:
+gunicorn core.wsgi:application
+Security Considerations
+Secrets stored in environment variables
+.env file excluded from version control
+Secure cookies enabled in production
+HTTPS security settings configured
+
+Future Improvements:
+
+Complaint evidence file uploads
+Geo-location routing of complaints
+Notification system for complaint updates
+Dashboard for oversight authorities
+
+Author
+Victor Amusa
+Backend Engineering Student
+
+License
+
+This project is for educational purposes as part of a backend engineering capstone project.
