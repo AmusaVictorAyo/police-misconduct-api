@@ -27,3 +27,7 @@ class MeSerializer(serializers.ModelSerializer):
 
     def get_role(self, obj):
         return getattr(obj.profile, "role", None)
+    
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
