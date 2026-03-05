@@ -159,10 +159,17 @@ REST_FRAMEWORK = {
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
 
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
+    CSRF_TRUSTED_ORIGINS = ["https://police-misconduct-api.onrender.com"]
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-    # HSTS (start low; increase later only when you're sure everything is HTTPS)
-    SECURE_HSTS_SECONDS = 60  # 1 minute
+    # HSTS (start low; increase later only when sure)
+    SECURE_HSTS_SECONDS = 60
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = False  # keep False until you're 100% sure
+    SECURE_HSTS_PRELOAD = False
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
