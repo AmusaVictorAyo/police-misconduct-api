@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from .serializers import LoginSerializer
+from rest_framework import status
 
 from .serializers import RegisterSerializer, MeSerializer
 
@@ -11,6 +13,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
 
     def post(self, request):
         username = request.data.get("username")

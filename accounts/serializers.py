@@ -25,7 +25,7 @@ class MeSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "email", "role"]
 
-    def get_role(self, obj):
+    def get_role(self, obj) -> str:
         return getattr(obj.profile, "role", None)
     
 class LoginSerializer(serializers.Serializer):
